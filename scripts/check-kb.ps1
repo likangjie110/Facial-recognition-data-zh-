@@ -24,6 +24,7 @@ $RequiredScriptFiles = @(
   'scripts/extract-pdf-fulltext.ps1',
   'scripts/check-pdf-fulltext.ps1',
   'scripts/check-pdf-preview.ps1',
+  'scripts/check-project-examples.ps1',
   'scripts/generate-pdf-preview.py',
   'scripts/generate-pdf-preview.ps1'
 )
@@ -63,6 +64,7 @@ $SourceCount = $RequiredSourceFiles.Count
 
 & (Join-Path $PSScriptRoot 'check-pdf-fulltext.ps1')
 & (Join-Path $PSScriptRoot 'check-pdf-preview.ps1')
+& (Join-Path $PSScriptRoot 'check-project-examples.ps1')
 
 Write-Host "Knowledge base check passed."
 Write-Host "Markdown files: $MarkdownCount"
