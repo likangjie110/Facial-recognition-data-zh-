@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>人脸识别资料知识库</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
+  <link rel="stylesheet" href="assets/docsify-custom.css">
+</head>
+<body>
+  <div id="app">正在加载知识库...</div>
+  <script>
+    window.$docsify = {
+      name: '人脸识别资料知识库',
+      homepage: '/README.md',
+      loadSidebar: true,
+      loadNavbar: true,
+      coverpage: true,
+      onlyCover: false,
+      alias: {
+        '/.*/_sidebar.md': '/_sidebar.md',
+        '/.*/_navbar.md': '/_navbar.md'
+      },
+      maxLevel: 4,
+      subMaxLevel: 3,
+      auto2top: true,
+      externalLinkTarget: '_blank',
+      noCompileLinks: [
+        '.*\\.(pdf|zip|rar)$'
+      ],
+      plugins: [
+        function(hook) {
+          hook.doneEach(function() {
+            var assetPattern = /\.(pdf|zip|rar)(?:$|[?#])/i;
+            var siteRoot = window.location.origin + window.location.pathname;
+            document.querySelectorAll('article a[href]').forEach(function(link) {
+              var href = link.getAttribute('href');
+              if (!href || !assetPattern.test(href) || href.indexOf('http') === 0) {
+                return;
+              }
+              var normalizedHref = href.replace(/^\.\.\//, './');
+              link.setAttribute('href', new URL(normalizedHref, siteRoot).href);
+            });
+          });
+        }
+      ],
+      search: {
+        paths: 'auto',
+        placeholder: '搜索型号、SDK、工具或照片下发',
+        noData: '未找到匹配内容',
+        depth: 4
+      }
+    };
+  </script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/docsify.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4/lib/plugins/search.min.js"></script>
+</body>
+</html>

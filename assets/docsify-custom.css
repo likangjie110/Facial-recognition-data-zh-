@@ -1,0 +1,83 @@
+:root {
+  --theme-color: #2563eb;
+  --base-font-size: 16px;
+  --heading-color: #172033;
+  --sidebar-name-color: #172033;
+}
+
+body {
+  color: #233044;
+}
+
+.app-name-link img {
+  max-width: 120px;
+}
+
+.sidebar {
+  border-right: 1px solid #e6eaf0;
+}
+
+.sidebar ul li a {
+  color: #31415c;
+}
+
+.markdown-section {
+  max-width: 980px;
+}
+
+.markdown-section h1,
+.markdown-section h2,
+.markdown-section h3 {
+  color: #172033;
+  letter-spacing: 0;
+}
+
+.markdown-section table {
+  display: table;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.markdown-section th {
+  background: #f4f7fb;
+  color: #172033;
+  font-weight: 600;
+}
+
+.markdown-section td,
+.markdown-section th {
+  border-color: #d9e1ec;
+  vertical-align: top;
+}
+
+.markdown-section blockquote {
+  border-left-color: #2f855a;
+  background: #f5fbf7;
+  color: #284634;
+}
+
+.cover-main {
+  color: #172033;
+}
+
+.cover-main blockquote {
+  border-left: none;
+  background: transparent;
+  color: #3a4b65;
+}
+
+.cover-main .anchor span {
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .markdown-section {
+    padding: 24px 18px;
+  }
+
+  .markdown-section table {
+    display: block;
+    overflow-x: auto;
+  }
+}
+
