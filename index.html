@@ -32,12 +32,187 @@
       ],
       plugins: [
         function(hook) {
+          var PDF_PREVIEW_MANIFEST_URL = 'assets/pdf-preview/manifest.json';
+          var pdfPreviewManifest = null;
+          var pdfPreviewManifestLoader = null;
           var pdfPreviewState = {
             dialog: null,
-            frame: null,
+            viewer: null,
             title: null,
             openLink: null
           };
+
+          function getSiteRoot() {
+            return window.location.origin + window.location.pathname;
+          }
+
+          function loadPdfPreviewManifest() {
+            if (pdfPreviewManifest) {
+              return Promise.resolve(pdfPreviewManifest);
+            }
+
+            if (!pdfPreviewManifestLoader) {
+              var manifestUrl = new URL(PDF_PREVIEW_MANIFEST_URL, getSiteRoot()).href;
+              pdfPreviewManifestLoader = fetch(manifestUrl, { cache: 'no-cache' })
+                .then(function(response) {
+                  if (!response.ok) {
+                    throw new Error('Failed to load PDF preview manifest: ' + response.status);
+                  }
+                  return response.json();
+                })
+                .then(function(manifest) {
+                  pdfPreviewManifest = manifest;
+                  return manifest;
+                });
+            }
+
+            return pdfPreviewManifestLoader;
+          }
+
+          function getPdfFileName(pdfUrl) {
+            var url = new URL(pdfUrl, getSiteRoot());
+            return decodeURIComponent(url.pathname.split('/').pop() || '');
+          }
+
+          function createPdfViewer() {
+            var viewer = document.createElement('div');
+            viewer.className = 'pdf-image-viewer';
+            viewer.innerHTML = [
+              '<div class="pdf-page-controls">',
+              '  <button class="pdf-prev-page" type="button">上一页</button>',
+              '  <span class="pdf-page-status">正在加载 PDF...</span>',
+              '  <button class="pdf-next-page" type="button">下一页</button>',
+              '</div>',
+              '<div class="pdf-preview-stage">',
+              '  <img class="pdf-preview-image" alt="PDF 预览页面" loading="lazy">',
+              '</div>',
+              '<p class="pdf-preview-message" role="status"></p>'
+            ].join('');
+            viewer.pdfState = {
+              preview: null,
+              pageNumber: 1,
+              loadId: 0,
+              renderId: 0
+            };
+
+            viewer.querySelector('.pdf-prev-page').addEventListener('click', function() {
+              changePdfPage(viewer, -1);
+            });
+            viewer.querySelector('.pdf-next-page').addEventListener('click', function() {
+              changePdfPage(viewer, 1);
+            });
+
+            updatePdfControls(viewer);
+            return viewer;
+          }
+
+          function setPdfMessage(viewer, message, isError) {
+            var messageEl = viewer.querySelector('.pdf-preview-message');
+            messageEl.textContent = message || '';
+            messageEl.classList.toggle('is-error', !!isError);
+          }
+
+          function updatePdfControls(viewer) {
+            var state = viewer.pdfState;
+            var hasPreview = !!state.preview;
+            var pageCount = hasPreview ? state.preview.pageCount : 1;
+            viewer.querySelector('.pdf-prev-page').disabled = !hasPreview || state.pageNumber <= 1;
+            viewer.querySelector('.pdf-next-page').disabled = !hasPreview || state.pageNumber >= pageCount;
+            viewer.querySelector('.pdf-page-status').textContent = hasPreview
+              ? '第 ' + state.pageNumber + ' / ' + pageCount + ' 页'
+              : '正在加载 PDF...';
+          }
+
+          function clearPdfViewer(viewer) {
+            var state = viewer.pdfState;
+            state.loadId += 1;
+            state.renderId += 1;
+            state.preview = null;
+            state.pageNumber = 1;
+            var image = viewer.querySelector('.pdf-preview-image');
+            image.removeAttribute('src');
+            image.alt = 'PDF 预览页面';
+            setPdfMessage(viewer, '');
+            updatePdfControls(viewer);
+          }
+
+          function loadPdfIntoViewer(viewer, pdfUrl) {
+            clearPdfViewer(viewer);
+            var state = viewer.pdfState;
+            state.loadId += 1;
+            var loadId = state.loadId;
+            setPdfMessage(viewer, '正在加载 PDF...');
+
+            loadPdfPreviewManifest()
+              .then(function(manifest) {
+                if (loadId !== state.loadId) {
+                  return;
+                }
+                var fileName = getPdfFileName(pdfUrl);
+                var preview = manifest.items && manifest.items[fileName];
+                if (!preview || !preview.pages || preview.pages.length === 0) {
+                  throw new Error('Missing PDF preview images: ' + fileName);
+                }
+                state.preview = preview;
+                state.pageNumber = 1;
+                updatePdfControls(viewer);
+                renderPreviewPage(viewer, 1);
+              })
+              .catch(function(error) {
+                if (loadId !== state.loadId) {
+                  return;
+                }
+                setPdfMessage(viewer, 'PDF 预览加载失败，请使用“打开原始文件”。', true);
+                updatePdfControls(viewer);
+                if (window.console && console.warn) {
+                  console.warn('PDF preview failed:', error);
+                }
+              });
+          }
+
+          function renderPreviewPage(viewer, pageNumber) {
+            var state = viewer.pdfState;
+            if (!state.preview) {
+              return;
+            }
+
+            state.renderId += 1;
+            var renderId = state.renderId;
+            var image = viewer.querySelector('.pdf-preview-image');
+            var imagePath = state.preview.pages[pageNumber - 1];
+            var imageUrl = new URL(imagePath, getSiteRoot()).href;
+
+            setPdfMessage(viewer, '正在加载第 ' + pageNumber + ' 页预览...');
+            updatePdfControls(viewer);
+            image.onload = function() {
+              if (renderId !== state.renderId) {
+                return;
+              }
+              setPdfMessage(viewer, '');
+              updatePdfControls(viewer);
+            };
+            image.onerror = function() {
+              if (renderId !== state.renderId) {
+                return;
+              }
+              setPdfMessage(viewer, 'PDF 预览图片加载失败。', true);
+            };
+            image.alt = (state.preview.title || 'PDF') + ' 第 ' + pageNumber + ' 页';
+            image.src = imageUrl;
+          }
+
+          function changePdfPage(viewer, delta) {
+            var state = viewer.pdfState;
+            if (!state.preview) {
+              return;
+            }
+            var nextPage = Math.min(state.preview.pageCount, Math.max(1, state.pageNumber + delta));
+            if (nextPage === state.pageNumber) {
+              return;
+            }
+            state.pageNumber = nextPage;
+            renderPreviewPage(viewer, nextPage);
+          }
 
           function ensurePdfPreviewDialog() {
             if (pdfPreviewState.dialog) {
@@ -59,15 +234,16 @@
               '      <button class="pdf-preview-close" type="button" aria-label="关闭 PDF 预览">关闭</button>',
               '    </div>',
               '  </header>',
-              '  <iframe class="pdf-preview-frame" title="PDF 预览"></iframe>',
+              '  <div class="pdf-preview-body"></div>',
               '</div>'
             ].join('');
 
             document.body.appendChild(dialog);
             pdfPreviewState.dialog = dialog;
-            pdfPreviewState.frame = dialog.querySelector('.pdf-preview-frame');
+            pdfPreviewState.viewer = createPdfViewer();
             pdfPreviewState.title = dialog.querySelector('.pdf-preview-title');
             pdfPreviewState.openLink = dialog.querySelector('.pdf-preview-original');
+            dialog.querySelector('.pdf-preview-body').appendChild(pdfPreviewState.viewer);
 
             dialog.querySelector('.pdf-preview-close').addEventListener('click', closePdfPreview);
             dialog.querySelector('[data-pdf-preview-close]').addEventListener('click', closePdfPreview);
@@ -82,7 +258,7 @@
             ensurePdfPreviewDialog();
             pdfPreviewState.title.textContent = title || 'PDF 预览';
             pdfPreviewState.openLink.href = pdfUrl;
-            pdfPreviewState.frame.src = pdfUrl;
+            loadPdfIntoViewer(pdfPreviewState.viewer, pdfUrl);
             pdfPreviewState.dialog.classList.add('is-open');
             pdfPreviewState.dialog.setAttribute('aria-hidden', 'false');
             document.body.classList.add('pdf-preview-open');
@@ -94,38 +270,73 @@
             }
             pdfPreviewState.dialog.classList.remove('is-open');
             pdfPreviewState.dialog.setAttribute('aria-hidden', 'true');
-            pdfPreviewState.frame.removeAttribute('src');
+            clearPdfViewer(pdfPreviewState.viewer);
             document.body.classList.remove('pdf-preview-open');
+          }
+
+          function getPdfTitle(link) {
+            var row = link.closest('tr');
+            if (row && row.cells.length > 0) {
+              return row.cells[0].innerText.trim();
+            }
+            return link.innerText.trim() || 'PDF 预览';
+          }
+
+          function addInlinePdfPreview(pdfLinks) {
+            if (pdfLinks.length !== 1 || document.querySelector('.pdf-inline-preview')) {
+              return;
+            }
+
+            var link = pdfLinks[0];
+            var table = link.closest('table');
+            var mountAfter = table || link.closest('p') || link;
+            var section = document.createElement('section');
+            var viewer = createPdfViewer();
+            section.className = 'pdf-inline-preview';
+            section.innerHTML = [
+              '<h2>PDF 预览</h2>',
+              '<p class="pdf-inline-source">' + getPdfTitle(link) + '</p>'
+            ].join('');
+            section.appendChild(viewer);
+            mountAfter.insertAdjacentElement('afterend', section);
+            loadPdfIntoViewer(viewer, link.href);
           }
 
           hook.doneEach(function() {
             var assetPattern = /\.(pdf|zip|rar)(?:$|[?#])/i;
             var pdfPattern = /\.pdf(?:$|[?#])/i;
             var siteRoot = window.location.origin + window.location.pathname;
+            var pdfLinks = [];
             document.querySelectorAll('article a[href]').forEach(function(link) {
               var href = link.getAttribute('href');
               if (!href || !assetPattern.test(href)) {
                 return;
               }
               var normalizedHref = href.replace(/^\.\.\//, './');
-              var resolvedHref = href.indexOf('http') === 0 ? href : new URL(normalizedHref, siteRoot).href;
+              var resolvedHref = /^https?:/i.test(href) ? href : new URL(normalizedHref, siteRoot).href;
               link.setAttribute('href', resolvedHref);
 
               if (!pdfPattern.test(resolvedHref)) {
                 return;
               }
 
+              pdfLinks.push(link);
               link.setAttribute('data-pdf-preview', 'true');
               link.removeAttribute('target');
+              if (link.getAttribute('data-pdf-preview-bound') === 'true') {
+                return;
+              }
+              link.setAttribute('data-pdf-preview-bound', 'true');
               link.addEventListener('click', function(event) {
                 event.preventDefault();
                 event.stopPropagation();
                 if (event.stopImmediatePropagation) {
                   event.stopImmediatePropagation();
                 }
-                openPdfPreview(resolvedHref, link.closest('tr') ? link.closest('tr').cells[0].innerText : link.innerText);
+                openPdfPreview(resolvedHref, getPdfTitle(link));
               });
             });
+            addInlinePdfPreview(pdfLinks);
           });
         }
       ],

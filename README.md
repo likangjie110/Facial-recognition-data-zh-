@@ -47,7 +47,8 @@
 2. 从 `README.md` 或 `00-入口/知识库总览.md` 进入。
 3. 编辑 Markdown 资料卡时，优先使用相对链接，确保 Docsify 和 Obsidian 都能打开。
 4. PDF 有新增或替换后，运行 `scripts/extract-pdf-fulltext.ps1` 重新生成全文页。
-5. 发布前运行 `scripts/check-kb.ps1` 检查基础文件和 PDF 全文是否齐全。
+5. 运行 `scripts/generate-pdf-preview.ps1` 重新生成在线 PDF 预览图。
+6. 发布前运行 `scripts/check-kb.ps1` 检查基础文件、PDF 全文和 PDF 预览是否齐全。
 
 ## 在线发布
 

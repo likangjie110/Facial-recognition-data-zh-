@@ -23,7 +23,9 @@ $RequiredScriptFiles = @(
   'scripts/extract-pdf-fulltext.py',
   'scripts/extract-pdf-fulltext.ps1',
   'scripts/check-pdf-fulltext.ps1',
-  'scripts/check-pdf-preview.ps1'
+  'scripts/check-pdf-preview.ps1',
+  'scripts/generate-pdf-preview.py',
+  'scripts/generate-pdf-preview.ps1'
 )
 
 $RequiredSourceFiles = @(

@@ -14,6 +14,7 @@ Set-Location -LiteralPath $Root
 
 Get-Command git -ErrorAction Stop | Out-Null
 
+& (Join-Path $PSScriptRoot 'generate-pdf-preview.ps1')
 & (Join-Path $PSScriptRoot 'check-kb.ps1')
 
 $LargeFiles = Get-ChildItem -LiteralPath $Root -File |
