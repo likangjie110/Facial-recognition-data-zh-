@@ -63,6 +63,8 @@ GitHub Pages 访问地址：
 https://likangjie110.github.io/Facial-recognition-data-zh-/
 ```
 
+当前发布方式：`main` 分支维护源码和资料，`gh-pages` 分支提供 GitHub Pages 静态站点。
+
 首次推送到 GitHub：
 
 ```powershell
@@ -76,3 +78,5 @@ https://likangjie110.github.io/Facial-recognition-data-zh-/
 ```
 
 GitHub Pages 建议配置为从 `main` 分支的 `/root` 目录发布。
+
+当前仓库已推送 `gh-pages` 分支，GitHub Pages 可直接从 `gh-pages` 分支根目录发布。

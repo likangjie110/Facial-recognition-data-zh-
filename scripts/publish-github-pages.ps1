@@ -2,8 +2,10 @@
 param(
   [string]$RemoteUrl,
   [string]$Branch = 'main',
+  [string]$PagesBranch = 'gh-pages',
   [string]$Message = 'docs: update face recognition knowledge base',
-  [switch]$SkipPush
+  [switch]$SkipPush,
+  [switch]$SkipPagesBranch
 )
 
 $ErrorActionPreference = 'Stop'
@@ -68,3 +70,6 @@ if ($LASTEXITCODE -ne 0 -or -not $Origin) {
 
 & git push -u origin $Branch
 
+if (-not $SkipPagesBranch) {
+  & git push origin "${Branch}:$PagesBranch"
+}
