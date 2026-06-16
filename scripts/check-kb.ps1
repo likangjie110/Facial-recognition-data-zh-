@@ -22,7 +22,8 @@ $RequiredSiteFiles = @(
 $RequiredScriptFiles = @(
   'scripts/extract-pdf-fulltext.py',
   'scripts/extract-pdf-fulltext.ps1',
-  'scripts/check-pdf-fulltext.ps1'
+  'scripts/check-pdf-fulltext.ps1',
+  'scripts/check-pdf-preview.ps1'
 )
 
 $RequiredSourceFiles = @(
@@ -59,6 +60,7 @@ $MarkdownCount = (Get-ChildItem -LiteralPath $Root -Recurse -File -Filter '*.md'
 $SourceCount = $RequiredSourceFiles.Count
 
 & (Join-Path $PSScriptRoot 'check-pdf-fulltext.ps1')
+& (Join-Path $PSScriptRoot 'check-pdf-preview.ps1')
 
 Write-Host "Knowledge base check passed."
 Write-Host "Markdown files: $MarkdownCount"

@@ -32,16 +32,99 @@
       ],
       plugins: [
         function(hook) {
+          var pdfPreviewState = {
+            dialog: null,
+            frame: null,
+            title: null,
+            openLink: null
+          };
+
+          function ensurePdfPreviewDialog() {
+            if (pdfPreviewState.dialog) {
+              return;
+            }
+
+            var dialog = document.createElement('div');
+            dialog.className = 'pdf-preview-dialog';
+            dialog.setAttribute('role', 'dialog');
+            dialog.setAttribute('aria-modal', 'true');
+            dialog.setAttribute('aria-hidden', 'true');
+            dialog.innerHTML = [
+              '<div class="pdf-preview-backdrop" data-pdf-preview-close></div>',
+              '<div class="pdf-preview-shell">',
+              '  <header class="pdf-preview-header">',
+              '    <h2 class="pdf-preview-title">PDF 预览</h2>',
+              '    <div class="pdf-preview-actions">',
+              '      <a class="pdf-preview-original" target="_blank" rel="noopener">打开原始文件</a>',
+              '      <button class="pdf-preview-close" type="button" aria-label="关闭 PDF 预览">关闭</button>',
+              '    </div>',
+              '  </header>',
+              '  <iframe class="pdf-preview-frame" title="PDF 预览"></iframe>',
+              '</div>'
+            ].join('');
+
+            document.body.appendChild(dialog);
+            pdfPreviewState.dialog = dialog;
+            pdfPreviewState.frame = dialog.querySelector('.pdf-preview-frame');
+            pdfPreviewState.title = dialog.querySelector('.pdf-preview-title');
+            pdfPreviewState.openLink = dialog.querySelector('.pdf-preview-original');
+
+            dialog.querySelector('.pdf-preview-close').addEventListener('click', closePdfPreview);
+            dialog.querySelector('[data-pdf-preview-close]').addEventListener('click', closePdfPreview);
+            document.addEventListener('keydown', function(event) {
+              if (event.key === 'Escape' && dialog.classList.contains('is-open')) {
+                closePdfPreview();
+              }
+            });
+          }
+
+          function openPdfPreview(pdfUrl, title) {
+            ensurePdfPreviewDialog();
+            pdfPreviewState.title.textContent = title || 'PDF 预览';
+            pdfPreviewState.openLink.href = pdfUrl;
+            pdfPreviewState.frame.src = pdfUrl;
+            pdfPreviewState.dialog.classList.add('is-open');
+            pdfPreviewState.dialog.setAttribute('aria-hidden', 'false');
+            document.body.classList.add('pdf-preview-open');
+          }
+
+          function closePdfPreview() {
+            if (!pdfPreviewState.dialog) {
+              return;
+            }
+            pdfPreviewState.dialog.classList.remove('is-open');
+            pdfPreviewState.dialog.setAttribute('aria-hidden', 'true');
+            pdfPreviewState.frame.removeAttribute('src');
+            document.body.classList.remove('pdf-preview-open');
+          }
+
           hook.doneEach(function() {
             var assetPattern = /\.(pdf|zip|rar)(?:$|[?#])/i;
+            var pdfPattern = /\.pdf(?:$|[?#])/i;
             var siteRoot = window.location.origin + window.location.pathname;
             document.querySelectorAll('article a[href]').forEach(function(link) {
               var href = link.getAttribute('href');
-              if (!href || !assetPattern.test(href) || href.indexOf('http') === 0) {
+              if (!href || !assetPattern.test(href)) {
                 return;
               }
               var normalizedHref = href.replace(/^\.\.\//, './');
-              link.setAttribute('href', new URL(normalizedHref, siteRoot).href);
+              var resolvedHref = href.indexOf('http') === 0 ? href : new URL(normalizedHref, siteRoot).href;
+              link.setAttribute('href', resolvedHref);
+
+              if (!pdfPattern.test(resolvedHref)) {
+                return;
+              }
+
+              link.setAttribute('data-pdf-preview', 'true');
+              link.removeAttribute('target');
+              link.addEventListener('click', function(event) {
+                event.preventDefault();
+                event.stopPropagation();
+                if (event.stopImmediatePropagation) {
+                  event.stopImmediatePropagation();
+                }
+                openPdfPreview(resolvedHref, link.closest('tr') ? link.closest('tr').cells[0].innerText : link.innerText);
+              });
             });
           });
         }
