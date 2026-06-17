@@ -6,6 +6,22 @@
 
 `examples/java-face-register`
 
+## 项目结构
+
+```text
+java-face-register
+  - src/
+    - main/
+      - java/
+        - com/
+          - aegis/
+            - face/
+              - FaceProtocol.java
+              - Main.java
+  - pom.xml
+  - README.md
+```
+
 ## 功能
 
 - 生成 `0xEF 0xAA` 协议帧。
@@ -43,16 +59,14 @@ java -jar target/java-face-register-1.0.0.jar --mock --image C:\path\face.jpg
 | `src/main/java/com/aegis/face/FaceProtocol.java` | 协议封包、校验、照片分包 |
 | `src/main/java/com/aegis/face/Main.java` | CLI 入口和 mock 调用链 |
 
-## 源码入口
+## 文件内容预览
 
-| 文件 | 在线打开 |
-| --- | --- |
-| README | <a href="examples/java-face-register/README.md" target="_blank" rel="noopener">打开</a> |
-| Maven 配置 | <a href="examples/java-face-register/pom.xml" target="_blank" rel="noopener">打开</a> |
-| 协议实现 | <a href="examples/java-face-register/src/main/java/com/aegis/face/FaceProtocol.java" target="_blank" rel="noopener">打开</a> |
-| 调用入口 | <a href="examples/java-face-register/src/main/java/com/aegis/face/Main.java" target="_blank" rel="noopener">打开</a> |
+源码预览页包含 `README.md`、`pom.xml`、`FaceProtocol.java`、`Main.java` 的完整文件内容。
+
+- [查看 Java 项目全部文件内容](/50-项目案例/源码预览/Java项目文件预览.md)
 
 ## 参考
 
-- [项目案例总览](项目案例总览.md)
+- [项目案例总览](/50-项目案例/项目案例总览.md)
+- [项目文件预览索引](/50-项目案例/源码预览/项目文件预览索引.md)
 - [软件开发手册](/20-软件开发/软件开发手册.md)

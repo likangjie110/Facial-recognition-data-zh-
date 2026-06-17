@@ -10,6 +10,11 @@ $RequiredFiles = @(
   '50-项目案例/Cpp完整项目.md',
   '50-项目案例/Qt完整项目.md',
   '50-项目案例/Python完整项目.md',
+  '50-项目案例/源码预览/项目文件预览索引.md',
+  '50-项目案例/源码预览/Java项目文件预览.md',
+  '50-项目案例/源码预览/Cpp项目文件预览.md',
+  '50-项目案例/源码预览/Qt项目文件预览.md',
+  '50-项目案例/源码预览/Python项目文件预览.md',
   'examples/java-face-register/README.md',
   'examples/java-face-register/pom.xml',
   'examples/java-face-register/src/main/java/com/aegis/face/Main.java',
@@ -27,7 +32,9 @@ $RequiredFiles = @(
   'examples/python-face-register/README.md',
   'examples/python-face-register/requirements.txt',
   'examples/python-face-register/src/face_protocol.py',
-  'examples/python-face-register/src/main.py'
+  'examples/python-face-register/src/main.py',
+  'scripts/generate-project-preview.py',
+  'scripts/generate-project-preview.ps1'
 )
 
 $RequiredNavigation = @(
@@ -35,7 +42,8 @@ $RequiredNavigation = @(
   '50-项目案例/Java完整项目.md',
   '50-项目案例/Cpp完整项目.md',
   '50-项目案例/Qt完整项目.md',
-  '50-项目案例/Python完整项目.md'
+  '50-项目案例/Python完整项目.md',
+  '50-项目案例/源码预览/项目文件预览索引.md'
 )
 
 $Failures = New-Object System.Collections.Generic.List[string]
@@ -70,6 +78,65 @@ foreach ($RelativePath in @('README.md', '00-入口/资料地图.md', '00-入口
   }
   if ($RelativePath -eq '20-软件开发/软件开发手册.md' -and $Text -notmatch [regex]::Escape('50-项目案例/Java完整项目.md')) {
     $Failures.Add("$RelativePath missing language project example links")
+  }
+}
+
+$RequiredCommentMarkers = @{
+  'examples/java-face-register/src/main/java/com/aegis/face/FaceProtocol.java' = @('/**', 'Builds a complete protocol frame', 'Builds all frames required by photo registration')
+  'examples/java-face-register/src/main/java/com/aegis/face/Main.java' = @('/**', 'Command-line entry point', 'Transport abstraction')
+  'examples/cpp-face-register/src/face_protocol.hpp' = @('///', 'Builds a complete protocol frame', 'Builds photo registration frames')
+  'examples/cpp-face-register/src/main.cpp' = @('/// Mock transport', 'Reads an image file')
+  'examples/qt-face-register/src/mainwindow.h' = @('/// Main Qt window', '/// Builds one complete protocol frame', '/// Sends a single frame')
+  'examples/python-face-register/src/face_protocol.py' = @('"""', 'Build one complete protocol frame', 'Build all frames required by')
+  'examples/python-face-register/src/main.py' = @('"""', 'Mock transport', 'Serial transport')
+}
+
+foreach ($Entry in $RequiredCommentMarkers.GetEnumerator()) {
+  $FullPath = Join-Path $Root $Entry.Key
+  if (-not (Test-Path -LiteralPath $FullPath)) {
+    continue
+  }
+  $Text = Get-Content -LiteralPath $FullPath -Raw
+  foreach ($Marker in $Entry.Value) {
+    if ($Text -notmatch [regex]::Escape($Marker)) {
+      $Failures.Add("$($Entry.Key) missing comment marker: $Marker")
+    }
+  }
+}
+
+foreach ($RelativePath in @(
+  '50-项目案例/Java完整项目.md',
+  '50-项目案例/Cpp完整项目.md',
+  '50-项目案例/Qt完整项目.md',
+  '50-项目案例/Python完整项目.md'
+)) {
+  $FullPath = Join-Path $Root $RelativePath
+  if (-not (Test-Path -LiteralPath $FullPath)) {
+    continue
+  }
+  $Text = Get-Content -LiteralPath $FullPath -Raw
+  foreach ($Keyword in @('## 项目结构', '## 文件内容预览')) {
+    if ($Text -notmatch [regex]::Escape($Keyword)) {
+      $Failures.Add("$RelativePath missing section: $Keyword")
+    }
+  }
+}
+
+foreach ($RelativePath in @(
+  '50-项目案例/源码预览/Java项目文件预览.md',
+  '50-项目案例/源码预览/Cpp项目文件预览.md',
+  '50-项目案例/源码预览/Qt项目文件预览.md',
+  '50-项目案例/源码预览/Python项目文件预览.md'
+)) {
+  $FullPath = Join-Path $Root $RelativePath
+  if (-not (Test-Path -LiteralPath $FullPath)) {
+    continue
+  }
+  $Text = Get-Content -LiteralPath $FullPath -Raw
+  foreach ($Keyword in @('## 项目结构', '## 文件内容', '```')) {
+    if ($Text -notmatch [regex]::Escape($Keyword)) {
+      $Failures.Add("$RelativePath missing preview content: $Keyword")
+    }
   }
 }
 

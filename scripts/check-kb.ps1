@@ -26,7 +26,9 @@ $RequiredScriptFiles = @(
   'scripts/check-pdf-preview.ps1',
   'scripts/check-project-examples.ps1',
   'scripts/generate-pdf-preview.py',
-  'scripts/generate-pdf-preview.ps1'
+  'scripts/generate-pdf-preview.ps1',
+  'scripts/generate-project-preview.py',
+  'scripts/generate-project-preview.ps1'
 )
 
 $RequiredSourceFiles = @(

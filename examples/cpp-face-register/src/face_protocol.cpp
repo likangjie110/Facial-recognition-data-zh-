@@ -6,6 +6,7 @@
 
 namespace aegis::face {
 
+// Builds one complete protocol frame.
 Bytes buildFrame(std::uint8_t msgId, const Bytes& data) {
     const auto size = static_cast<std::uint16_t>(data.size());
     Bytes frame;
@@ -20,6 +21,7 @@ Bytes buildFrame(std::uint8_t msgId, const Bytes& data) {
     return frame;
 }
 
+// Builds the sequence-0 metadata packet for photo registration.
 Bytes firstPacket(std::uint32_t photoLength) {
     return Bytes{
         0x00,
@@ -32,6 +34,7 @@ Bytes firstPacket(std::uint32_t photoLength) {
     };
 }
 
+// Builds one sequenced photo data packet.
 Bytes dataPacket(std::uint16_t seq, const Bytes& photoChunk) {
     Bytes data;
     data.reserve(2 + photoChunk.size());
@@ -41,6 +44,7 @@ Bytes dataPacket(std::uint16_t seq, const Bytes& photoChunk) {
     return data;
 }
 
+// Splits a photo into the first packet and all data packets.
 std::vector<Bytes> buildPhotoRegisterFrames(const Bytes& photo) {
     std::vector<Bytes> frames;
     frames.push_back(buildFrame(MidEnrollWithPhoto, firstPacket(static_cast<std::uint32_t>(photo.size()))));
@@ -58,6 +62,7 @@ std::vector<Bytes> buildPhotoRegisterFrames(const Bytes& photo) {
     return frames;
 }
 
+// Calculates XOR parity for one frame.
 std::uint8_t parity(std::uint8_t msgId, std::uint16_t size, const Bytes& data) {
     std::uint8_t value = msgId;
     value ^= static_cast<std::uint8_t>((size >> 8) & 0xFF);
@@ -68,6 +73,7 @@ std::uint8_t parity(std::uint8_t msgId, std::uint16_t size, const Bytes& data) {
     return value;
 }
 
+// Formats bytes as uppercase hexadecimal text.
 std::string toHex(const Bytes& bytes) {
     std::ostringstream stream;
     for (std::size_t i = 0; i < bytes.size(); ++i) {

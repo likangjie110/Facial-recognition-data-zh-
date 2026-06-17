@@ -6,6 +6,18 @@
 
 `examples/cpp-face-register`
 
+## 项目结构
+
+```text
+cpp-face-register
+  - src/
+    - face_protocol.cpp
+    - face_protocol.hpp
+    - main.cpp
+  - CMakeLists.txt
+  - README.md
+```
+
 ## 功能
 
 - 使用 C++17 实现协议帧构造。
@@ -45,12 +57,13 @@ Linux 或 MinGW 环境下可运行：
 | `src/face_protocol.cpp` | 帧构造、校验、分包实现 |
 | `src/main.cpp` | CLI 入口、mock transport 和调用流程 |
 
-## 源码入口
+## 文件内容预览
 
-| 文件 | 在线打开 |
-| --- | --- |
-| README | <a href="examples/cpp-face-register/README.md" target="_blank" rel="noopener">打开</a> |
-| CMake 配置 | <a href="examples/cpp-face-register/CMakeLists.txt" target="_blank" rel="noopener">打开</a> |
-| 协议头文件 | <a href="examples/cpp-face-register/src/face_protocol.hpp" target="_blank" rel="noopener">打开</a> |
-| 协议实现 | <a href="examples/cpp-face-register/src/face_protocol.cpp" target="_blank" rel="noopener">打开</a> |
-| 调用入口 | <a href="examples/cpp-face-register/src/main.cpp" target="_blank" rel="noopener">打开</a> |
+源码预览页包含 `README.md`、`CMakeLists.txt`、`face_protocol.hpp`、`face_protocol.cpp`、`main.cpp` 的完整文件内容。
+
+- [查看 C++ 项目全部文件内容](/50-项目案例/源码预览/Cpp项目文件预览.md)
+
+## 参考
+
+- [项目案例总览](/50-项目案例/项目案例总览.md)
+- [项目文件预览索引](/50-项目案例/源码预览/项目文件预览索引.md)

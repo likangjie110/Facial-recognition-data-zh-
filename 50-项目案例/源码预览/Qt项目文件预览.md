@@ -1,3 +1,82 @@
+# Qt项目文件预览
+
+Qt 6 Widgets + SerialPort 示例，展示图形界面、串口发送和 mock 模式。
+
+工程位置：`examples/qt-face-register`
+
+## 项目结构
+
+```text
+qt-face-register
+  - src/
+    - main.cpp
+    - mainwindow.cpp
+    - mainwindow.h
+  - CMakeLists.txt
+  - README.md
+```
+
+## 文件内容
+
+### `CMakeLists.txt`
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(qt_face_register LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_AUTOMOC ON)
+
+find_package(Qt6 REQUIRED COMPONENTS Widgets SerialPort)
+
+add_executable(qt_face_register
+  src/main.cpp
+  src/mainwindow.h
+  src/mainwindow.cpp
+)
+
+target_link_libraries(qt_face_register PRIVATE Qt6::Widgets Qt6::SerialPort)
+```
+
+### `README.md`
+
+````markdown
+# Qt Face Register Demo
+
+Qt 6 Widgets demo for photo registration.
+
+## Build
+
+```powershell
+cmake -S . -B build -DCMAKE_PREFIX_PATH=C:\Qt\6.6.0\msvc2019_64
+cmake --build build
+.\build\qt_face_register.exe
+```
+
+Use mock mode first. Disable mock mode after selecting a real serial port.
+````
+
+### `src/main.cpp`
+
+```cpp
+#include "mainwindow.h"
+
+#include <QApplication>
+
+/// Qt application entry point for the face register demo.
+int main(int argc, char* argv[]) {
+    QApplication app(argc, argv);
+    MainWindow window;
+    window.resize(820, 560);
+    window.show();
+    return app.exec();
+}
+```
+
+### `src/mainwindow.cpp`
+
+```cpp
 #include "mainwindow.h"
 
 #include <QCheckBox>
@@ -184,3 +263,75 @@ void MainWindow::sendFrame(const QByteArray& frame) {
     }
     serial_.write(frame);
 }
+```
+
+### `src/mainwindow.h`
+
+```cpp
+#pragma once
+
+#include <QByteArray>
+#include <QMainWindow>
+#include <QSerialPort>
+
+class QCheckBox;
+class QComboBox;
+class QLabel;
+class QPushButton;
+class QTextEdit;
+
+/// Main Qt window for choosing an image, sending frames, and showing replies.
+class MainWindow : public QMainWindow {
+    Q_OBJECT
+
+public:
+    /// Builds the main window and initializes the UI.
+    explicit MainWindow(QWidget* parent = nullptr);
+
+private slots:
+    /// Lets the user choose a face image from disk.
+    void chooseImage();
+    /// Builds and sends the photo registration frames.
+    void sendPhotoRegister();
+    /// Refreshes the available serial ports.
+    void refreshPorts();
+    /// Reads and logs serial data from the device.
+    void readSerialData();
+
+private:
+    /// Builds one complete protocol frame.
+    QByteArray buildFrame(quint8 msgId, const QByteArray& data) const;
+    /// Builds the first packet for a photo registration sequence.
+    QByteArray firstPacket(qint64 photoLength) const;
+    /// Builds a single data packet for one photo chunk.
+    QByteArray dataPacket(quint16 seq, const QByteArray& chunk) const;
+    /// Builds all frames needed for photo registration.
+    QList<QByteArray> buildPhotoRegisterFrames(const QByteArray& photo) const;
+    /// Calculates XOR parity for one frame.
+    quint8 parity(quint8 msgId, const QByteArray& data) const;
+    /// Appends a message to the on-screen log.
+    void appendLog(const QString& line);
+    /// Sends a single frame through mock mode or serial mode.
+    void sendFrame(const QByteArray& frame);
+
+    /// Serial port selector.
+    QComboBox* portCombo_ = nullptr;
+    /// Displays the selected image path.
+    QLabel* imageLabel_ = nullptr;
+    /// Enables offline mock mode.
+    QCheckBox* mockMode_ = nullptr;
+    /// Shows sent frames and replies.
+    QTextEdit* log_ = nullptr;
+    /// Starts the registration flow.
+    QPushButton* sendButton_ = nullptr;
+    /// Underlying serial port handle.
+    QSerialPort serial_;
+    /// Selected image file path.
+    QString imagePath_;
+};
+```
+
+## 返回
+
+- [项目文件预览索引](/50-项目案例/源码预览/项目文件预览索引.md)
+- [项目案例总览](/50-项目案例/项目案例总览.md)

@@ -5,6 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Utility methods for the face module photo registration protocol.
+ */
 public final class FaceProtocol {
     public static final int SYNC_0 = 0xEF;
     public static final int SYNC_1 = 0xAA;
@@ -15,6 +18,10 @@ public final class FaceProtocol {
     private FaceProtocol() {
     }
 
+    /**
+     * Builds a complete protocol frame with SyncWord, message id, payload size,
+     * payload bytes, and XOR parity.
+     */
     public static byte[] buildFrame(int msgId, byte[] data) {
         int size = data.length;
         ByteArrayOutputStream out = new ByteArrayOutputStream(2 + 1 + 2 + size + 1);
@@ -28,6 +35,10 @@ public final class FaceProtocol {
         return out.toByteArray();
     }
 
+    /**
+     * Builds all frames required by photo registration, including the first
+     * metadata packet and all 246-byte photo chunks.
+     */
     public static List<byte[]> buildPhotoRegisterFrames(byte[] photo) {
         List<byte[]> frames = new ArrayList<>();
         frames.add(buildFrame(MID_ENROLL_WITH_PHOTO, firstPacket(photo.length)));
@@ -45,6 +56,10 @@ public final class FaceProtocol {
         return frames;
     }
 
+    /**
+     * Builds the first photo registration packet with sequence 0, photo length,
+     * and biometric type.
+     */
     public static byte[] firstPacket(int photoLength) {
         return new byte[] {
             0x00,
@@ -57,6 +72,9 @@ public final class FaceProtocol {
         };
     }
 
+    /**
+     * Builds a sequenced photo data packet for one image chunk.
+     */
     public static byte[] dataPacket(int seq, byte[] photoChunk) {
         byte[] data = new byte[2 + photoChunk.length];
         data[0] = (byte) ((seq >>> 8) & 0xFF);
@@ -65,6 +83,9 @@ public final class FaceProtocol {
         return data;
     }
 
+    /**
+     * Calculates the XOR parity over all bytes after the SyncWord.
+     */
     public static int parity(int msgId, int size, byte[] data) {
         int value = msgId & 0xFF;
         value ^= (size >>> 8) & 0xFF;
@@ -75,6 +96,9 @@ public final class FaceProtocol {
         return value & 0xFF;
     }
 
+    /**
+     * Formats a byte array as uppercase hexadecimal text for logging.
+     */
     public static String hex(byte[] bytes) {
         StringBuilder builder = new StringBuilder();
         for (byte item : bytes) {

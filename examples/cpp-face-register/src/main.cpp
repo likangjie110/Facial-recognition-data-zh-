@@ -8,8 +8,10 @@
 
 namespace {
 
+/// Mock transport that prints outgoing frames and returns a successful reply.
 class MockTransport {
 public:
+    /// Sends one frame through the offline mock channel.
     aegis::face::Bytes exchange(const aegis::face::Bytes& frame) {
         ++count_;
         std::cout << "TX[" << count_ << "] " << aegis::face::toHex(frame) << '\n';
@@ -20,6 +22,7 @@ private:
     int count_ = 0;
 };
 
+/// Creates deterministic demo image bytes for mock runs.
 aegis::face::Bytes demoPhoto() {
     aegis::face::Bytes bytes(512);
     for (std::size_t i = 0; i < bytes.size(); ++i) {
@@ -28,6 +31,7 @@ aegis::face::Bytes demoPhoto() {
     return bytes;
 }
 
+/// Reads an image file as raw bytes.
 aegis::face::Bytes readFile(const std::filesystem::path& path) {
     std::ifstream input(path, std::ios::binary);
     if (!input) {
@@ -36,6 +40,7 @@ aegis::face::Bytes readFile(const std::filesystem::path& path) {
     return aegis::face::Bytes(std::istreambuf_iterator<char>(input), {});
 }
 
+/// Reads the value following a named command-line option.
 std::filesystem::path optionValue(int argc, char** argv, const std::string& name) {
     for (int i = 1; i + 1 < argc; ++i) {
         if (argv[i] == name) {
@@ -47,6 +52,7 @@ std::filesystem::path optionValue(int argc, char** argv, const std::string& name
 
 }  // namespace
 
+/// Command-line entry point for the photo registration demo.
 int main(int argc, char** argv) {
     try {
         const auto imagePath = optionValue(argc, argv, "--image");
