@@ -37,6 +37,9 @@ public final class Main {
         }
     }
 
+    /**
+     * Prevents instantiation because this class only exposes the CLI entry point.
+     */
     private Main() {
     }
 

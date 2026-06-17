@@ -95,6 +95,9 @@ public final class FaceProtocol {
     public static final int BIO_TYPE_NORMAL_PHOTO = 0x00;
     public static final int MAX_PHOTO_CHUNK = 246;
 
+    /**
+     * Prevents instantiation because this class only exposes static helpers.
+     */
     private FaceProtocol() {
     }
 
@@ -234,6 +237,9 @@ public final class Main {
         }
     }
 
+    /**
+     * Prevents instantiation because this class only exposes the CLI entry point.
+     */
     private Main() {
     }
 
